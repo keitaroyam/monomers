@@ -57,7 +57,7 @@ class TestMonlib(unittest.TestCase):
         lgroups = {row.str(0):row.str(1) for row in comp_list.find("_chem_comp.", ["id", "group"])}
         lg_set = set(lgroups.values())
         all_set = set(["peptide", "P-peptide", "M-peptide", "DNA", "RNA", "pyranose", "ketopyranose", "furanose", "NON-POLYMER"])
-        try: self.assertTrue(lg_set.issubset(all_set), msg="groups: {}".format(str(lg_set)))
+        try: self.assertTrue(lg_set.issubset(all_set), msg="unknown groups: {}".format(str(lg_set - all_set)))
         except AssertionError as e: self.errors.append(str(e))
 
     def test_links(self):
@@ -75,13 +75,13 @@ class TestMonlib(unittest.TestCase):
         link_undef_comp =  [(row.str(0), row.str(i)) for row in ltab for i in (1,4) if row.str(i) !="" and row.str(i) not in lgroups]
         mod_undef_comp =   [(row.str(0), row.str(1)) for row in mtab if row.str(1) !="" and row.str(1) not in lgroups]
 
-        try: self.assertFalse(link_undef_group, msg="undefined groups referenced in links: {}".format(link_undef_group))
+        try: self.assertFalse(link_undef_group, msg="undefined groups referenced in links")
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(mod_undef_group, msg="undefined groups referenced in mods: {}".format(mod_undef_group))
+        try: self.assertFalse(mod_undef_group, msg="undefined groups referenced in mods")
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(link_undef_comp, msg="undefined comp referenced in links: {}".format(link_undef_comp))
+        try: self.assertFalse(link_undef_comp, msg="undefined comp referenced in links")
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(mod_undef_comp, msg="undefined comp referenced in mods: {}".format(mod_undef_comp))
+        try: self.assertFalse(mod_undef_comp, msg="undefined comp referenced in mods")
         except AssertionError as e: self.errors.append(str(e))
 
         for row in ltab:
