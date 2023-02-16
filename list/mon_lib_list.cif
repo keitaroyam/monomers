@@ -12,7 +12,7 @@ _chem_comp.group
 _chem_comp.number_atoms_all
 _chem_comp.number_atoms_nh
 _chem_comp.desc_level
-000 000 'methyl hydrogen carbonate' NON-POLYMER 9 5 .
+000 000 'methyl hydrogen carbonate' NON-POLYMer 9 5 .
 001 001 '1-[2,2-DIFLUORO-2-(3,4,5-TRIMETHOXY-PHENYL)-ACETYL]-PIPERIDINE-2-CARBOXYLIC ACID 4-PHENYL-1-(3-PYRIDIN-3-YL-PROPYL)-BUTYL ESTER' NON-POLYMER 87 45 .
 002 002 'N-[(2R)-2-BENZYL-4-(HYDROXYAMINO)-4-OXOBUTANOYL]-L-ISOLEUCYL-L-LEUCINE' NON-POLYMER 66 32 .
 003 003 '5-METHYL-7-(2-METHYLPROPYL)-2-(NAPHTHALEN-1-YLMETHYL)-3-PYRIDIN-4-YL-2H-PYRAZOLO[3,4-D]PYRIMIDINE-4,6(5H,7H)-DIONE' NON-POLYMER 58 33 .
@@ -35994,8 +35994,8 @@ DG9-SER DG9 DG9m1 NON-POLYMER SER SERm1 peptide DG9-SER
 SS . CYS-SS peptide . CYS-SS peptide SS-bridge
 disulf CYS CYS-SS peptide CYS CYS-SS peptide SS-bridge
 CYS-MPR CYS CYS-SS peptide MPR . NON-POLYMER SS-bridge
-TRANS . DEL-OXT peptide . DEL-HN1 peptide TRANS
-CIS . DEL-OXT peptide . DEL-HN1 peptide CIS
+TRANS . DEL-OXT R . DEL-HN1 peptide TRANS
+CIS . DEL-OXT RNA/DNA . DEL-HN1 peptide CIS
 PTRANS . DEL-OXT peptide . DEL-HNP P-peptide PTRANS
 PCIS . DEL-OXT peptide . DEL-HNP P-peptide PCIS
 NMTRANS . DEL-OXT1 peptide . DEL-NMH M-peptide NMTRANS
@@ -36114,7 +36114,7 @@ NA-STAND DNA/RNA_to_residue_modification . DNA/RNA
 p5*END DNA/RNA-p5*-terminus . DNA/RNA
 p3*END DNA/RNA-p3*-terminus . DNA/RNA
 DEL_OP3 DN/RNA-OP3-delete . DNA/RNA
-DEL_HO3p DNA/RNA-OP3-delete . DNA/RNA
+DEL_HO3p DNA/RNA-OP3-delete . .
 F86m1 "[(2~{R},3~{S},4~{R},5~{R})-5-(4-azanylpyrrolo[2,1-f][1,2,4]triazin-7-yl)-5-cyano-3,4-bis(oxidanyl)oxolan-2-yl]methyl dihydrogen phosphate" F86 NON-POLYMER
 FOR-N N-terminus_of_formyl . .
 FOR-C C-terminus_of_formyl . .
