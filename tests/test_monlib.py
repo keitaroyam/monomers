@@ -34,15 +34,16 @@ class TestMonlib(unittest.TestCase):
             block = doc.find_block("comp_list")
             for row in block.find("_chem_comp.", ["id", "group"]):
                 cgroups[row[0]] = row.str(1)
-                try: self.assertTrue(lgroups.get(row[0]) == row.str(1))
+                try: self.assertTrue(lgroups.get(row[0]) == row.str(1),
+                                     msg="{}: group {} vs {}".format(row[0], lgroups.get(row[0]), row.str(1)))
                 except AssertionError as e: self.errors.append(str(e))
 
         only_in_cif = set(cgroups) - set(lgroups)
-        try: self.assertFalse(only_in_cif, msg="only in cif files")
+        try: self.assertFalse(only_in_cif, msg="only in cif files: {}".format(only_in_cif))
         except AssertionError as e: self.errors.append(str(e))
         
         only_in_list = set(lgroups) - set(cgroups)
-        try: self.assertFalse(only_in_list, msg="only in list")
+        try: self.assertFalse(only_in_list, msg="only in list: {}".format(only_in_list))
         except AssertionError as e: self.errors.append(str(e))
 
     def test_gemmi_monlib(self):
@@ -74,13 +75,13 @@ class TestMonlib(unittest.TestCase):
         link_undef_comp =  [(row.str(0), row.str(i)) for row in ltab for i in (1,4) if row.str(i) !="" and row.str(i) not in lgroups]
         mod_undef_comp =   [(row.str(0), row.str(1)) for row in mtab if row.str(1) !="" and row.str(1) not in lgroups]
 
-        try: self.assertFalse(link_undef_group, msg="undefined groups referenced in links")
+        try: self.assertFalse(link_undef_group, msg="undefined groups referenced in links: {}".format(link_undef_group))
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(mod_undef_group, msg="undefined groups referenced in mods")
+        try: self.assertFalse(mod_undef_group, msg="undefined groups referenced in mods: {}".format(mod_undef_group))
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(link_undef_comp, msg="undefined comp referenced in links")
+        try: self.assertFalse(link_undef_comp, msg="undefined comp referenced in links: {}".format(link_undef_comp))
         except AssertionError as e: self.errors.append(str(e))
-        try: self.assertFalse(mod_undef_comp, msg="undefined comp referenced in mods")
+        try: self.assertFalse(mod_undef_comp, msg="undefined comp referenced in mods: {}".format(mod_undef_comp))
         except AssertionError as e: self.errors.append(str(e))
 
         for row in ltab:
