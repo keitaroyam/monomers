@@ -1,0 +1,19 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu2204:
+    name: "Ubuntu 22.04"
+    runs-on: ubuntu-22.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update
+        sudo apt-get install python3-pip 
+    - name: run test
+      run: |
+        sudo python3 -m pip install gemmi
+        python3 -m unittest discover tests/
