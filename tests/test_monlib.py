@@ -34,7 +34,7 @@ class TestMonlib(unittest.TestCase):
             block = doc.find_block("comp_list")
             for row in block.find("_chem_comp.", ["id", "group"]):
                 cgroups[row[0]] = row.str(1)
-                try: self.assertTrue(lgroups.get(row[0]) == row.str(1),
+                try: self.assertEqual(lgroups.get(row[0]), row.str(1),
                                      msg="{}: group {} vs {}".format(row[0], lgroups.get(row[0]), row.str(1)))
                 except AssertionError as e: self.errors.append(str(e))
 
