@@ -21,7 +21,7 @@ _chem_comp_atom.charge
 _chem_comp_atom.x
 _chem_comp_atom.y
 _chem_comp_atom.z
-AOP3     O       OP      -1      22.184      9.416       -6.467      
+A OP3     O       OP      -1      22.184      9.416       -6.467      
 A       P       P       P       0       23.061      10.073      -7.517      
 A       OP1     O       O       0       22.426      10.079      -8.894      
 A       OP2     O       OP      -1      24.478      9.532       -7.523      
