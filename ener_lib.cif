@@ -422,7 +422,7 @@ _lib_bond.value_esd
  CR5  CR5  aromatic  450.000    1.390  0.020
  CR5  CR5  single    450.000    1.490  0.015
  CR55 CR5  aromatic  450.000    1.390  0.020
- CR55 CR5  single      .        1.490  0.020
+ CR55CR5  single      .        1.490  0.020
  CR56 CR5  aromatic  450.000    1.390  0.020
  CR56 CR5  single    450.000    1.490  0.020
  CR56 CR56 aromatic  450.000    1.390  0.020
