@@ -7,11 +7,13 @@ Mozilla Public License, version 2.0; see LICENSE.
 """
 from __future__ import absolute_import, division, print_function, generators
 import unittest
+import warnings
 import os
 import glob
 import gemmi
 
 monlib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+warnings.formatwarning = lambda x, *a: "Warning: {}\n".format(x)
 
 def read_mon_lib_list():
     doc = gemmi.cif.read(os.path.join(monlib_path, "list", "mon_lib_list.cif"))
@@ -20,14 +22,20 @@ def read_mon_lib_list():
     mod_list = doc.find_block("mod_list")
     return comp_list, link_list, mod_list
 
+def read_ener_lib():
+    doc = gemmi.cif.read(os.path.join(monlib_path, "ener_lib.cif"))
+    b = doc.find_block("energy")
+    return b
 
 class TestMonlib(unittest.TestCase):
     def setUp(self): self.errors = []
     def tearDown(self): self.assertEqual(len(self.errors), 0, msg="\n"+"\n".join(self.errors))
 
-    def test_list_consistency(self):
+    def test_monomers(self):
         comp_list, link_list, mod_list = read_mon_lib_list()
         lgroups = {row.str(0):row.str(1) for row in comp_list.find("_chem_comp.", ["id", "group"])}
+        elib = read_ener_lib()
+        all_types = set(elib.find_values("_lib_atom.type"))
         cgroups = {}
         for f in glob.glob(os.path.join(monlib_path, "?", "*.cif")):
             doc = gemmi.cif.read(f)
@@ -38,12 +46,35 @@ class TestMonlib(unittest.TestCase):
                                      msg="{}: group {} vs {}".format(row[0], lgroups.get(row[0]), row.str(1)))
                 except AssertionError as e: self.errors.append(str(e))
 
+            b = doc[-1]
+            all_atoms = []
+            for row in b.find("_chem_comp_atom.", ["atom_id", "type_energy"]):
+                # test unknown energy type
+                try: self.assertTrue(row.str(1) in all_types, msg="{} unknown energy type {} {}".format(os.path.basename(f), row[0], row[1]))
+                except AssertionError as e: self.errors.append(str(e))
+                all_atoms.append(row.str(0))
+
+            # test unknown atoms in restraints
+            all_atoms = set(all_atoms)
+            for t1, t2 in (("_chem_comp_bond.", ["atom_id_1", "atom_id_2"]),
+                           ("_chem_comp_angle.", ["atom_id_1", "atom_id_2", "atom_id_3"]),
+                           ("_chem_comp_tor.", ["atom_id_1", "atom_id_2", "atom_id_3", "atom_id_4"]),
+                           ("_chem_comp_chir.", ["atom_id_centre", "atom_id_1", "atom_id_2", "atom_id_3"]),
+                           ("_chem_comp_plane_atom.", ["atom_id"])):
+                for row in b.find(t1, t2):
+                    for i in range(len(t2)):
+                        if t1 == "_chem_comp_chir." and not row.str(i): continue # some metals
+                        #try: self.assertTrue(row.str(i) in all_atoms, msg="{} unknown atom {}{} {}".format(os.path.basename(f), t1, t2[i], row.str(i)))
+                        #except AssertionError as e: self.errors.append(str(e))
+                        if row.str(i) not in all_atoms:
+                            warnings.warn("Unknown atom in restraint: {} {}{} {}".format(os.path.basename(f), t1, t2[i], row.str(i)))
+
         only_in_cif = set(cgroups) - set(lgroups)
-        try: self.assertFalse(only_in_cif, msg="only in cif files: {}".format(only_in_cif))
+        try: self.assertFalse(only_in_cif, msg="groups only in cif files")
         except AssertionError as e: self.errors.append(str(e))
         
         only_in_list = set(lgroups) - set(cgroups)
-        try: self.assertFalse(only_in_list, msg="only in list: {}".format(only_in_list))
+        try: self.assertFalse(only_in_list, msg="groups only in list")
         except AssertionError as e: self.errors.append(str(e))
 
     def test_gemmi_monlib(self):
@@ -51,6 +82,41 @@ class TestMonlib(unittest.TestCase):
         lgroups = {row.str(0):row.str(1) for row in comp_list.find("_chem_comp.", ["id", "group"])}
         try: monlib = gemmi.read_monomer_lib(monlib_path, list(lgroups))
         except Exception as e: self.errors.append(str(e))
+
+        def atoms_from_rt(rt, exd=False): # exd = exclude deleted
+            d = ord("d")
+            atoms = [a for b in rt.bonds for a in (b.id1, b.id2) if not exd or b.id1.comp != d]
+            atoms.extend(a for b in rt.angles for a in (b.id1, b.id2, b.id3) if not exd or b.id1.comp != d)
+            atoms.extend(a for b in rt.torsions for a in (b.id1, b.id2, b.id3, b.id4) if not exd or b.id1.comp != d)
+            atoms.extend(a for b in rt.chirs for a in (b.id_ctr, b.id1, b.id2, b.id3) if not exd or b.id1.comp != d)
+            atoms.extend(a for b in rt.planes for a in b.ids if not exd or a.comp != d)
+            return atoms
+
+        for ln in monlib.links:
+            l = monlib.links[ln]
+            if l.side1.comp == l.side2.comp == "": continue
+            atoms = atoms_from_rt(l.rt)
+            for i in range(1, 3):
+                mon = (l.side1, l.side2)[i-1].comp
+                if not mon: continue
+                only_in_restr = set(a.atom for a in atoms if a.comp == i) - set(a.id for a in monlib.monomers[mon].atoms)
+                try: self.assertFalse(only_in_restr, msg="unknown atoms in link {} mon {}".format(ln, mon))
+                except AssertionError as e: self.errors.append(str(e))
+
+        for mn in monlib.modifications:
+            m = monlib.modifications[mn]
+            if not m.comp_id: continue
+            try: self.assertFalse(any([chr(am.func)=="a" and not am.new_id for am in m.atom_mods]),
+                                  msg="{} _chem_mod_atom.new_atom_id missing".format(mn))
+            except AssertionError as e: self.errors.append(str(e))
+            atoms = atoms_from_rt(m.rt, True)
+            # atoms may be added in modification
+            mon_atoms = set(a.id for a in monlib.monomers[m.comp_id].atoms)
+            added_atoms = set(am.new_id for am in m.atom_mods if chr(am.func)=="a")
+            deled_atoms = set(am.old_id for am in m.atom_mods if chr(am.func)=="d")
+            only_in_restr = set(a.atom for a in atoms) - ((mon_atoms | added_atoms) - deled_atoms)
+            try: self.assertFalse(only_in_restr, msg="unknown atoms in mod {} mon {}".format(mn, m.comp_id))
+            except AssertionError as e: self.errors.append(str(e))
 
     def test_group(self):
         comp_list, link_list, mod_list = read_mon_lib_list()
