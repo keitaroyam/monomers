@@ -7,7 +7,7 @@ _chem_comp.group
 _chem_comp.number_atoms_all
 _chem_comp.number_atoms_nh
 _chem_comp.desc_level
-ALA ALA ALANINE peptide 13 6 .
+ALA ALA ALANINE M-peptide 13 6 .
 
 data_comp_ALA
 loop_
